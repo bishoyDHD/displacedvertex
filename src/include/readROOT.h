@@ -74,6 +74,9 @@ private:
   TH1D *h1negvertBegin[4];
   TH1D *h1negvertEnd[4];
 
+  // TRACKING DETECTOR HISTOS
+  TH2D* h2VertBHits[4],*h2SiBHitsXY[4],*h2MPGDBHits[4];
+
   //Reco Heavy Meson
   TH1D *h1InvM[4];
   TH1D *h1VertX[4];
@@ -86,6 +89,7 @@ private:
   TH2D* h2pvEta[4];
   TH2D* h2pTvalpha[4];
   TH2D* h2vertXY[4];
+  TH2D *h2VertREta[4];
   // daughter particles p v. eta
   TH2D* h2pospvEta[4];
   TH2D* h2negpvEta[4];

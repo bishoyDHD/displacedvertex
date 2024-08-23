@@ -72,6 +72,32 @@ void readROOT::readFile(TChain* pchain){
   TTreeReaderArray<unsigned int> trackBegin(tree_reader, "ReconstructedChargedParticles.tracks_begin");
   TTreeReaderArray<unsigned int> trackEnd(tree_reader, "ReconstructedChargedParticles.tracks_end");
 
+  // DETECTOR TRACKING ELEMENTS
+  // Vertex Barrel Hits
+  TTreeReaderArray<float> vertBpLen(tree_reader, "VertexBarrelHits.pathLength");
+  TTreeReaderArray<double> vertBPosX(tree_reader, "VertexBarrelHits.position.x");
+  TTreeReaderArray<double> vertBPosY(tree_reader, "VertexBarrelHits.position.y");
+  TTreeReaderArray<double> vertBPosZ(tree_reader, "VertexBarrelHits.position.z");
+  TTreeReaderArray<float> vertBMomX(tree_reader, "VertexBarrelHits.momentum.x");
+  TTreeReaderArray<float> vertBMomY(tree_reader, "VertexBarrelHits.momentum.y");
+  TTreeReaderArray<float> vertBMomZ(tree_reader, "VertexBarrelHits.momentum.z");
+  // Si Barrel Hits
+  TTreeReaderArray<float> SiBpLen(tree_reader, "SiBarrelHits.pathLength");
+  TTreeReaderArray<double> SiBPosX(tree_reader, "SiBarrelHits.position.x");
+  TTreeReaderArray<double> SiBPosY(tree_reader, "SiBarrelHits.position.y");
+  TTreeReaderArray<double> SiBPosZ(tree_reader, "SiBarrelHits.position.z");
+  TTreeReaderArray<float> SiBMomX(tree_reader, "SiBarrelHits.momentum.x");
+  TTreeReaderArray<float> SiBMomY(tree_reader, "SiBarrelHits.momentum.y");
+  TTreeReaderArray<float> SiBMomZ(tree_reader, "SiBarrelHits.momentum.z");
+  // MPGD
+  TTreeReaderArray<float> mpgdpLen(tree_reader, "MPGDBarrelHits.pathLength");
+  TTreeReaderArray<double> mpgdPosX(tree_reader, "MPGDBarrelHits.position.x");
+  TTreeReaderArray<double> mpgdPosY(tree_reader, "MPGDBarrelHits.position.y");
+  TTreeReaderArray<double> mpgdPosZ(tree_reader, "MPGDBarrelHits.position.z");
+  TTreeReaderArray<float> mpgdMomX(tree_reader, "MPGDBarrelHits.momentum.x");
+  TTreeReaderArray<float> mpgdMomY(tree_reader, "MPGDBarrelHits.momentum.y");
+  TTreeReaderArray<float> mpgdMomZ(tree_reader, "MPGDBarrelHits.momentum.z");
+
   // Get Associations Between MCParticles and ReconstructedChargedParticles
   TTreeReaderArray<unsigned int> recoAssoc(tree_reader, "ReconstructedChargedParticleAssociations.recID");
   TTreeReaderArray<unsigned int> simuAssoc(tree_reader, "ReconstructedChargedParticleAssociations.simID");
@@ -127,9 +153,9 @@ void readROOT::readFile(TChain* pchain){
     nameHist="h1InvM_"+std::to_string(n);
     h1InvM[n] = new TH1D(nameHist.c_str(), "Invariant Mass GeV/c^{2}; M[GeV/c^{2}]", 150, 0, 15);
     nameHist="h1VertX_"+std::to_string(n);
-    h1VertX[n] = new TH1D(nameHist.c_str(), "Reconstructed Vertex X; x[mm]", 100, -5, 5);
+    h1VertX[n] = new TH1D(nameHist.c_str(), "Reconstructed Vertex X; x[mm]", 300, -15, 15);
     nameHist="h1VertY_"+std::to_string(n);
-    h1VertY[n] = new TH1D(nameHist.c_str(), "Reconstructed Vertex Y; y[mm]", 100, -5, 5);
+    h1VertY[n] = new TH1D(nameHist.c_str(), "Reconstructed Vertex Y; y[mm]", 300, -15, 15);
     nameHist="h1VertZ_"+std::to_string(n);
     h1VertZ[n] = new TH1D(nameHist.c_str(), "Reconstructed Vertex Z; z[mm]", 100, -150, 150);
     nameHist="h1VertR_"+std::to_string(n);
@@ -142,37 +168,85 @@ void readROOT::readFile(TChain* pchain){
     h2pTvy[n]=new TH2D(nameHist.c_str(),"",60,-2,4,100,0,10);
     nameHist="h2pvEta_"+std::to_string(n);
     h2pvEta[n]=new TH2D(nameHist.c_str(),"",60,-2,4,100,0,20);
+    nameHist="h2VertREta_"+std::to_string(n);
+    h2VertREta[n]=new TH2D(nameHist.c_str(),"",100,-10,10,50,0,25);
     //Daughter p v. Eta profiles
     nameHist="h2pospvEta_"+std::to_string(n);
     h2pospvEta[n]=new TH2D(nameHist.c_str(),"",60,-2,4,100,0,20);
     nameHist="h2negpvEta_"+std::to_string(n);
     h2negpvEta[n]=new TH2D(nameHist.c_str(),"",60,-2,4,100,0,20);
+    // Vertex Barrel Tracker
+    nameHist="h2VertBHits_"+std::to_string(n);
+    h2VertBHits[n]=new TH2D(nameHist.c_str(),"",600,-800,800,600,-800,800);
+    nameHist="h2SiBHitsXY_"+std::to_string(n);
+    h2SiBHitsXY[n]=new TH2D(nameHist.c_str(),"",600,-800,800,600,-800,800);
+    nameHist="h2MPGDBHits_"+std::to_string(n);
+    h2MPGDBHits[n]=new TH2D(nameHist.c_str(),"",600,-800,800,600,-800,800);
   }
   
   while(tree_reader.Next()) { // Loop over events
     // Empty the container at the start of each event
     posPrtl.clear(); negPrtl.clear();
     kaon4Vec.clear(); pion4Vec.clear();
+    for(unsigned int ctv=0; ctv<ctvPosX.GetSize(); ctv++){
+      h1VertX[0]->Fill(ctvPosX[ctv]);
+      h1VertY[0]->Fill(ctvPosY[ctv]);
+      h1VertZ[0]->Fill(ctvPosZ[ctv]);
+      r=std::sqrt(std::pow(ctvPosX[ctv],2)+std::pow(ctvPosY[ctv],2)+std::pow(ctvPosZ[ctv],2));
+      h1VertR[0]->Fill(r);
+      h2vertXY[0]->Fill(ctvPosX[ctv],ctvPosY[ctv]);
+    }
     for(unsigned int j=0; j<trackCharge.GetSize(); j++){ // Loop over charged particles
       M_D0[0].SetPxPyPzE(trackMomX[j],trackMomY[j],trackMomZ[j],trackE[j]);
       h1InvM[0]->Fill(M_D0[0].M());
-      h1vertX[0]->Fill(ctvPosX[j]);
-      h1vertY[0]->Fill(ctvPosY[j]);
-      h1vertZ[0]->Fill(ctvPosZ[j]);
-      r=std::sqrt(std::pow(ctvPosX[j],2)+std::pow(ctvPosY[j],2)+std::pow(ctvPosZ[j],2));
+      h1VertX[1]->Fill(trackRefX[j]);
+      h1VertY[1]->Fill(trackRefY[j]);
+      h1VertZ[1]->Fill(trackRefZ[j]);
+      r=std::sqrt(std::pow(trackRefX[j],2)+std::pow(trackRefY[j],2)+std::pow(trackRefZ[j],2));
+      h1VertR[1]->Fill(r);
+      h2vertXY[1]->Fill(trackRefX[j],trackRefY[j]);
       h2pTvy[0]->Fill(M_D0[0].Rapidity(),M_D0[0].Pt());
       h2pvEta[0]->Fill(M_D0[0].PseudoRapidity(),M_D0[0].P());
+      // ------------Tracking Detectors ------------------------
+      for(unsigned int trk=0; trk<vertBpLen.GetSize(); trk++){
+        if(trackCharge[j]==1)
+          h2VertBHits[2]->Fill(vertBPosX[trk],vertBPosY[trk]);
+      }
+      for(unsigned int trk=0; trk<SiBpLen.GetSize(); trk++){
+        if(trackCharge[j]==1)
+          h2SiBHitsXY[2]->Fill(SiBPosX[trk],SiBPosY[trk]);
+      }
+      for(unsigned int trk=0; trk<mpgdpLen.GetSize(); trk++){
+        if(trackCharge[j]==1)
+          h2MPGDBHits[2]->Fill(mpgdPosX[trk],mpgdPosY[trk]);
+      }
+      // -------------------------------------------------------
       if(trackCharge[j]==1){//positively charged particle
+        h1VertX[2]->Fill(trackRefX[j]);
+        h1VertY[2]->Fill(trackRefY[j]);
+        h1VertZ[2]->Fill(trackRefZ[j]);
+        r=std::sqrt(std::pow(trackRefX[j],2)+std::pow(trackRefY[j],2)+std::pow(trackRefZ[j],2));
+        h1VertR[2]->Fill(r);
+        h2vertXY[2]->Fill(trackRefX[j],trackRefY[j]);
         parentLV.particle4Vec.SetPxPyPzE(trackMomX[j],trackMomY[j],trackMomZ[j],trackE[j]);
         posPrtl.push_back(parentLV);
         h2pospvEta[0]->Fill(parentLV.particle4Vec.Rapidity(),parentLV.particle4Vec.P());
         if(trackPDG[j]==321){//K+ 4-vector
+          M_D0[2].SetPxPyPzE(trackMomX[j],trackMomY[j],trackMomZ[j],trackE[j]);
+          prtlpos[2].SetXYZ(trackRefX[j],trackRefY[j],trackRefZ[j]);
           parentLV.particle4Vec.SetPxPyPzE(trackMomX[j],trackMomY[j],trackMomZ[j],trackE[j]);
           kaon4Vec.push_back(parentLV);
-          h2pospvEta[1]->Fill(parentLV.particle4Vec.Rapidity(),parentLV.particle4Vec.P());
+          h2pospvEta[1]->Fill(M_D0[2].Rapidity(),parentLV.particle4Vec.P());
+          h2VertREta[2]->Fill(prtlpos[2].PseudoRapidity(),r);
         }//end K+
       } //end positively charged particle if-loop
       if(trackCharge[j]==-1){//negatively charged particle
+        h1VertX[3]->Fill(trackRefX[j]);
+        h1VertY[3]->Fill(trackRefY[j]);
+        h1VertZ[3]->Fill(trackRefZ[j]);
+        r=std::sqrt(std::pow(trackRefX[j],2)+std::pow(trackRefY[j],2)+std::pow(trackRefZ[j],2));
+        h1VertR[3]->Fill(r);
+        h2vertXY[3]->Fill(trackRefX[j],trackRefY[j]);
         parentLV.particle4Vec.SetPxPyPzE(trackMomX[j],trackMomY[j],trackMomZ[j],trackE[j]);
         negPrtl.push_back(parentLV);
         h2negpvEta[0]->Fill(parentLV.particle4Vec.Rapidity(),parentLV.particle4Vec.P());
